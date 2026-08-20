@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ФЕМИДА — 111 (111)</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg-900:#161616;--bg-800:#1e1e1e;--bg-700:#242424;--bg-600:#2a2a2a;--bg-500:#333;--accent:#e8c96d;--accent-dim:#c9a84c;--accent-soft:rgba(232,201,109,.12);--accent-glow:rgba(232,201,109,.08);--text:#f0ece0;--text-muted:#9a9080;--text-dim:#5a5448;--border:rgba(232,201,109,.15);--border2:rgba(255,255,255,.06);--success:#7ec99a;--warning:#e8a84c;--danger:#d96060;--danger-soft:rgba(217,96,96,.12);--font:'Montserrat',sans-serif}
+body{background:var(--bg-900);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+.hidden{display:none!important}
+#loadingOverlay{position:fixed;inset:0;z-index:99999;background:var(--bg-900);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;color:var(--text-muted);font-size:.85rem;letter-spacing:2px}
+.loader-spinner{width:48px;height:48px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg-900)}::-webkit-scrollbar-thumb{background:var(--bg-500);border-radius:3px}
+.page-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,rgba(232,201,109,.03) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(232,201,109,.02) 0%,transparent 50%)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.modal-box{background:var(--bg-800);border:1px solid var(--border);border-radius:16px;max-width:680px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:fadeUp .35s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+.small-modal{max-width:420px}
+.modal-header{padding:32px 36px 24px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border2);flex-wrap:wrap}
+.modal-header h2{color:var(--accent);font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.modal-close{margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;transition:all .2s;padding:4px}
+.modal-close:hover{color:var(--danger);transform:rotate(90deg)}
+.warning-badge{background:rgba(232,168,76,.1);border:1px solid rgba(232,168,76,.35);color:var(--warning);padding:4px 12px;border-radius:20px;font-size:.68rem;letter-spacing:2px;font-weight:700;text-transform:uppercase}
+.modal-body{padding:28px 36px;display:flex;flex-direction:column;gap:16px}
+.modal-body p{color:var(--text-muted);font-size:.875rem;line-height:1.8}
+.modal-body p strong{color:var(--text);font-weight:600}
+.modal-footer{padding:20px 36px 32px;display:flex;justify-content:center}
+.btn-accept{background:var(--accent);border:none;color:#1a1510;font-weight:700;padding:14px 44px;border-radius:8px;cursor:pointer;font-size:.9rem;letter-spacing:1px;transition:all .3s;display:flex;align-items:center;gap:10px;font-family:var(--font)}
+.btn-accept:hover{background:var(--accent-dim);transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,201,109,.3)}
+.sbu-logo-img{width:48px;height:48px;object-fit:contain}.sbu-logo-img-lg{width:70px;height:70px;object-fit:contain}.sbu-logo-img-sm{width:32px;height:32px;object-fit:contain}
+.auth-container{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.auth-card{background:var(--bg-800);border:1px solid var(--border);border-radius:18px;width:100%;max-width:460px;padding:44px 40px;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:fadeUp .5s ease}
+.auth-logo{text-align:center;margin-bottom:36px}
+.auth-logo h1{font-size:1.7rem;letter-spacing:5px;color:var(--accent);text-transform:uppercase;margin-top:14px;font-weight:800}
+.auth-subtitle{color:var(--text-muted);font-size:.75rem;margin-top:6px;letter-spacing:1px}
+.auth-divider{width:40px;height:2px;background:var(--accent);margin:12px auto;border-radius:2px;opacity:.6}
+.auth-tabs{display:flex;gap:4px;margin-bottom:28px;background:var(--bg-700);border-radius:8px;padding:4px}
+.auth-tab{flex:1;background:none;border:none;color:var(--text-muted);padding:10px;border-radius:6px;cursor:pointer;font-size:.82rem;transition:all .3s;font-family:var(--font);font-weight:500}
+.auth-tab.active{background:var(--bg-600);color:var(--accent);font-weight:600}
+.auth-form{display:flex;flex-direction:column;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:7px}
+.form-group label{color:var(--text-muted);font-size:.75rem;letter-spacing:.5px;display:flex;align-items:center;gap:8px;font-weight:500}
+.form-group label i{color:var(--accent);width:14px;font-size:.8rem}
+.form-group input,.form-group select,.form-group textarea{background:var(--bg-700);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;color:var(--text);font-size:.88rem;transition:all .3s;font-family:var(--font)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:rgba(232,201,109,.4);box-shadow:0 0 0 3px var(--accent-glow)}
+.form-group textarea{resize:vertical;min-height:100px}
+.form-error{background:var(--danger-soft);border:1px solid rgba(217,96,96,.3);color:var(--danger);padding:10px 14px;border-radius:8px;font-size:.82rem}
+.btn-primary{background:var(--accent);border:none;color:#1a1510;font-weight:700;padding:13px;border-radius:8px;cursor:pointer;font-size:.88rem;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font)}
+.btn-primary:hover{background:var(--accent-dim);transform:translateY(-2px);box-shadow:0 6px 20px rgba(232,201,109,.25)}
+.auth-footer{margin-top:28px;display:flex;align-items:center;gap:20px;color:var(--text-dim);font-size:.72rem;flex-wrap:wrap;justify-content:center}
+.secure-badge{color:var(--success);font-size:.72rem;display:flex;align-items:center;gap:6px;font-weight:500}
+.dashboard-container{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:40px;animation:fadeIn .6s ease}
+.user-welcome-box{display:flex;align-items:center;gap:20px;background:var(--bg-800);border:1px solid var(--border);border-radius:14px;padding:20px 32px;transition:transform .3s}
+.user-welcome-box:hover{transform:translateY(-3px)}
+.user-avatar-lg{width:60px;height:60px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+.user-info-block{display:flex;flex-direction:column;gap:3px}
+.user-greeting{color:var(--text-muted);font-size:.72rem;letter-spacing:1px}
+.user-name-lg{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.user-discord-id{color:var(--text-dim);font-size:.72rem}
+.portal-buttons-wrap{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+.portal-card{background:var(--bg-800);border:1px solid var(--border);border-radius:16px;text-align:center;cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);min-width:240px;max-width:280px;overflow:hidden}
+.portal-card:hover{border-color:var(--accent);box-shadow:0 16px 48px rgba(232,201,109,.12);transform:translateY(-8px)}
+.portal-card-img{width:100%;height:160px;object-fit:cover;display:block;filter:brightness(.7) saturate(.8);transition:filter .4s}
+.portal-card:hover .portal-card-img{filter:brightness(.85) saturate(.9)}
+.portal-card-body{padding:20px 24px 24px}
+.portal-icon{font-size:2rem;color:var(--accent);margin-bottom:10px}
+.portal-title{font-size:1rem;font-weight:700;letter-spacing:3px;margin-bottom:6px}
+.portal-sub{color:var(--text-muted);font-size:.75rem}
+.dash-footer{display:flex;align-items:center;gap:24px;color:var(--text-dim);font-size:.72rem;flex-wrap:wrap;justify-content:center}
+.btn-logout{background:rgba(217,96,96,.08);border:1px solid rgba(217,96,96,.2);color:var(--danger);padding:7px 16px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s;display:flex;align-items:center;gap:6px;font-family:var(--font)}
+.btn-logout:hover{background:rgba(217,96,96,.15)}
+.top-bar{background:var(--bg-800);border-bottom:1px solid var(--border2);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:.95rem;font-weight:700;letter-spacing:2px;color:var(--accent)}
+.topbar-subtitle{color:var(--text-dim);font-size:.65rem}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.notif-btn{position:relative;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:4px}
+.notif-btn:hover{color:var(--accent)}
+.notif-count{position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:.55rem;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.topbar-avatar{width:32px;height:32px;border-radius:50%;border:1px solid var(--accent);object-fit:cover}
+.topbar-username{font-size:.82rem;font-weight:600}
+.back-btn{background:none;border:1px solid var(--border2);color:var(--text-muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s;display:flex;align-items:center;gap:6px;font-family:var(--font)}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.portal-tabs{display:flex;gap:2px;justify-content:center;padding:16px 24px 0;border-bottom:1px solid var(--border2);background:var(--bg-800)}
+.portal-tab{background:none;border:none;color:var(--text-muted);padding:10px 18px;border-radius:6px 6px 0 0;cursor:pointer;font-size:.82rem;transition:all .2s;border-bottom:2px solid transparent;display:flex;align-items:center;gap:7px;font-family:var(--font);font-weight:500}
+.portal-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(232,201,109,.03)}
+.tab-content{display:none;padding:28px 24px;animation:fadeIn .4s ease}
+.tab-content.active{display:block}
+.section-title{font-size:.9rem;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+.form-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:12px;padding:28px;max-width:720px;margin:0 auto}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.submit-btn{background:var(--accent);border:none;color:#1a1510;font-weight:700;padding:13px 28px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .2s;display:inline-flex;align-items:center;gap:8px;font-family:var(--font)}
+.submit-btn:hover{background:var(--accent-dim);transform:translateY(-1px)}
+.appeals-list{display:flex;flex-direction:column;gap:10px}
+.appeal-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;transition:all .2s;cursor:pointer}
+.appeal-card:hover{border-color:rgba(232,201,109,.25);transform:translateX(4px)}
+.appeal-number{color:var(--accent);font-size:.7rem;letter-spacing:1px;margin-bottom:4px;font-weight:600}
+.appeal-theme{font-weight:600;margin-bottom:4px;font-size:.9rem}
+.appeal-desc{color:var(--text-muted);font-size:.8rem;line-height:1.5}
+.appeal-meta{color:var(--text-dim);font-size:.72rem;margin-top:6px}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap;font-family:var(--font)}
+.status-new{background:rgba(232,201,109,.1);border:1px solid rgba(232,201,109,.3);color:var(--accent)}
+.status-review{background:rgba(232,168,76,.1);border:1px solid rgba(232,168,76,.3);color:var(--warning)}
+.status-done{background:rgba(126,201,154,.1);border:1px solid rgba(126,201,154,.3);color:var(--success)}
+.status-active{background:rgba(217,96,96,.1);border:1px solid rgba(217,96,96,.3);color:var(--danger)}
+.status-closed{background:rgba(90,84,72,.2);border:1px solid rgba(90,84,72,.4);color:var(--text-muted)}
+.conviction-card{background:var(--bg-800);border:1px solid rgba(217,96,96,.15);border-radius:10px;padding:18px 20px;margin-bottom:10px}
+.conviction-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.conviction-id{color:var(--danger);font-weight:700;font-size:.88rem}
+.conviction-articles{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.article-tag{background:rgba(217,96,96,.08);border:1px solid rgba(217,96,96,.2);color:var(--danger);padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600}
+.conviction-meta{color:var(--text-muted);font-size:.78rem}
+.conviction-fine{color:var(--warning);font-size:.82rem;font-weight:600;margin-top:4px}
+.citizen-container,.employee-container{min-height:100vh;display:flex;flex-direction:column}
+.employee-layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 58px)}
+.sidebar{width:210px;min-width:210px;background:var(--bg-800);border-right:1px solid var(--border2);display:flex;flex-direction:column;padding:12px 0;overflow-y:auto}
+.sidebar-section{padding:10px 18px 4px;color:var(--text-dim);font-size:.62rem;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text-muted);cursor:pointer;transition:all .15s;font-size:.82rem;border-left:2px solid transparent;font-weight:500}
+.sidebar-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sidebar-item.active{color:var(--accent);background:var(--accent-soft);border-left-color:var(--accent)}
+.sidebar-item i{width:16px;text-align:center;font-size:.85rem}
+.sidebar-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:.6rem;padding:2px 6px;border-radius:10px;font-weight:700}
+.emp-main{flex:1;overflow-y:auto;padding:28px}
+.dash-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.dash-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:20px;text-align:center;transition:transform .2s}
+.dash-card:hover{transform:translateY(-3px)}
+.dash-card-val{font-size:2.2rem;font-weight:800;color:var(--accent);line-height:1}
+.dash-card-label{color:var(--text-muted);font-size:.72rem;margin-top:6px}
+.activity-log{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.log-header{padding:14px 20px;border-bottom:1px solid var(--border2);font-size:.78rem;font-weight:700;letter-spacing:1px;color:var(--accent);text-transform:uppercase}
+.log-item{padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.03);display:flex;align-items:center;gap:12px;font-size:.8rem}
+.log-item:last-child{border-bottom:none}
+.log-actor{color:var(--accent);font-weight:600;min-width:130px}
+.log-action{color:var(--text-muted);flex:1}
+.log-time{color:var(--text-dim);font-size:.7rem;white-space:nowrap}
+.profile-header{background:var(--bg-800);border:1px solid var(--border2);border-radius:12px;padding:28px;display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap}
+.profile-avatar{width:76px;height:76px;border-radius:50%;border:2px solid var(--accent);object-fit:cover}
+.profile-name{font-size:1.3rem;font-weight:800;color:var(--accent)}
+.profile-rank{color:var(--text-muted);font-size:.82rem;margin-top:4px}
+.profile-ids{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+.profile-id-item{display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:.75rem}
+.profile-id-item i{color:var(--accent)}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:center}
+.stat-val{font-size:1.8rem;font-weight:800;color:var(--accent)}
+.stat-label{color:var(--text-muted);font-size:.72rem;margin-top:4px}
+.info-grid{background:var(--bg-800);border:1px solid var(--border2);border-radius:12px;overflow:hidden}
+.info-row{display:flex;align-items:center;padding:13px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--text-muted);width:180px;font-size:.8rem;font-weight:500}
+.info-input{background:var(--bg-700);border:1px solid var(--border2);border-radius:6px;padding:7px 12px;color:var(--text);font-size:.82rem;flex:1;font-family:var(--font)}
+.data-table{width:100%;border-collapse:collapse;background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;overflow:hidden}
+.data-table th{background:var(--bg-700);color:var(--text-muted);font-size:.7rem;letter-spacing:1px;text-transform:uppercase;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border2);font-weight:600;white-space:nowrap}
+.data-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.wanted-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.wanted-card{background:var(--bg-800);border:1px solid rgba(217,96,96,.15);border-radius:10px;padding:18px;cursor:pointer;transition:all .2s}
+.wanted-card:hover{border-color:rgba(217,96,96,.4);transform:translateY(-2px)}
+.wanted-name{font-weight:700;font-size:.95rem;margin-bottom:4px}
+.wanted-rank{color:var(--text-muted);font-size:.78rem;margin-bottom:8px}
+.orient-num{color:var(--accent);font-weight:700;font-size:.78rem;margin-bottom:8px}
+.cases-list{display:flex;flex-direction:column;gap:10px}
+.case-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px}
+.case-card:hover{border-color:rgba(232,201,109,.25)}
+.case-num{color:var(--accent);font-weight:700;font-size:.82rem;min-width:80px}
+.case-info{flex:1}
+.case-title{font-size:.88rem;margin-bottom:3px;font-weight:500}
+.case-author{color:var(--text-dim);font-size:.75rem}
+.mil-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.mil-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:18px;cursor:pointer;transition:all .2s}
+.mil-card:hover{border-color:rgba(232,201,109,.25);transform:translateY(-2px)}
+.mil-name{font-weight:700;margin-bottom:3px;font-size:.92rem}
+.mil-unit{color:var(--text-muted);font-size:.78rem;margin-bottom:12px}
+.danger-bar{display:flex;align-items:center;gap:8px}
+.danger-dots{display:flex;gap:3px}
+.danger-dot{width:9px;height:9px;border-radius:50%;background:var(--bg-600)}
+.danger-dot.filled{background:var(--danger)}
+.danger-label{color:var(--text-dim);font-size:.72rem}
+.citizens-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.citizen-db-card{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:16px;cursor:pointer;transition:all .2s}
+.citizen-db-card:hover{border-color:rgba(232,201,109,.25)}
+.conviction-reg-card{background:var(--bg-800);border:1px solid rgba(217,96,96,.15);border-radius:10px;padding:20px;margin-bottom:14px}
+.conv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.conv-discord{color:var(--text-muted);font-size:.82rem;margin-bottom:8px}
+.conv-text{color:var(--text);margin-bottom:12px;font-size:.88rem}
+.conv-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:12px 0;border-top:1px solid var(--border2)}
+.conv-meta-item{display:flex;flex-direction:column;gap:2px}
+.conv-meta-label{color:var(--text-dim);font-size:.68rem;letter-spacing:.5px;text-transform:uppercase;font-weight:600}
+.conv-meta-val{color:var(--text);font-size:.82rem}
+.conv-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn-success{background:rgba(126,201,154,.08);border:1px solid rgba(126,201,154,.25);color:var(--success);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s;font-family:var(--font);font-weight:500}
+.btn-success:hover{background:rgba(126,201,154,.15)}
+.btn-danger{background:var(--danger-soft);border:1px solid rgba(217,96,96,.25);color:var(--danger);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s;font-family:var(--font);font-weight:500}
+.btn-danger:hover{background:rgba(217,96,96,.18)}
+.btn-secondary{background:var(--bg-700);border:1px solid var(--border2);color:var(--text-muted);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s;font-family:var(--font);font-weight:500}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.save-btn{background:var(--accent);border:none;color:#1a1510;font-weight:700;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:.78rem;font-family:var(--font)}
+.save-btn:hover{background:var(--accent-dim)}
+.detail-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.detail-box{background:var(--bg-800);border:1px solid var(--border);border-radius:14px;max-width:600px;width:100%;max-height:86vh;overflow-y:auto;animation:fadeUp .25s ease}
+.detail-header{padding:20px 24px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.detail-body{padding:24px}
+.search-bar{display:flex;gap:10px;margin-bottom:18px}
+.search-input{flex:1;background:var(--bg-800);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;color:var(--text);font-size:.85rem;font-family:var(--font)}
+.add-form-card{background:var(--bg-700);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:24px}
+.add-form-title{font-size:.82rem;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:14px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.secure-header-line{display:flex;align-items:center;gap:8px;color:var(--success);font-size:.7rem;letter-spacing:1px;margin-bottom:20px;font-weight:600}
+.secure-header-line::before,.secure-header-line::after{content:'';flex:1;height:1px;background:rgba(126,201,154,.15)}
+.new-appeals-widget{background:var(--bg-800);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-bottom:20px}
+.widget-title{font-size:.78rem;color:var(--text-muted);margin-bottom:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.widget-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem}
+.widget-item:last-child{border-bottom:none}
+.notif-dropdown{position:absolute;right:0;top:44px;background:var(--bg-800);border:1px solid var(--border);border-radius:10px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:200;animation:fadeUp .2s ease}
+.notif-header{padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center}
+.notif-header-title{font-size:.8rem;font-weight:700;color:var(--accent)}
+.notif-clear-btn{background:none;border:none;color:var(--text-dim);font-size:.72rem;cursor:pointer}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--border2);font-size:.8rem}
+.notif-item:last-child{border-bottom:none}
+.notif-item-title{font-weight:600;margin-bottom:2px;color:var(--accent)}
+.notif-item-text{color:var(--text-muted)}
+.empty-state{text-align:center;color:var(--text-dim);padding:48px 20px}
+.empty-state i{font-size:2.2rem;margin-bottom:12px;display:block;opacity:.5}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg-700);border:1px solid rgba(126,201,154,.3);color:var(--success);padding:12px 20px;border-radius:8px;z-index:9999;font-size:.82rem;display:flex;align-items:center;gap:8px;animation:fadeUp .3s ease}
+.appeal-success{background:rgba(126,201,154,.08);border:1px solid rgba(126,201,154,.25);color:var(--success);padding:12px 16px;border-radius:8px;font-size:.85rem;display:flex;align-items:center;gap:8px}
+@media(max-width:768px){.employee-layout{flex-direction:column;height:auto}.sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:6px 0}.sidebar-section{display:none}.sidebar-item{flex-direction:column;gap:3px;padding:8px 10px;font-size:.65rem;border-left:none;border-bottom:2px solid transparent}.sidebar-item.active{border-bottom-color:var(--accent)}.emp-main{padding:16px}.auth-card{padding:32px 24px}.portal-card{min-width:180px}.portal-card-img{height:120px}}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div id="loadingOverlay"><div class="loader-spinner"></div><div>ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ...</div></div>
+
+<div id="disclaimerModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png" class="sbu-logo-img" alt="">
+      <h2>Увага / Внимание</h2>
+      <div class="warning-badge">MST RP</div>
+    </div>
+    <div class="modal-body">
+      <p>Настоящий веб-портал является исключительно элементом ролевого (RolePlay) проекта.</p>
+      <p>Вся информация носит исключительно <strong>художественный и игровой характер</strong>.</p>
+      <p>Данный ресурс <strong>не является официальным сайтом</strong> какой-либо государственной структуры.</p>
+      <p>Продолжая использование, пользователь подтверждает игровой характер ресурса.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-accept" onclick="acceptDisclaimer()"><i class="fas fa-check"></i> Принимаю</button>
+    </div>
+  </div>
+</div>
+
+<div id="authPage" class="auth-container hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png" class="sbu-logo-img-lg" alt="">
+      <h1>ФЕМИДА</h1>
+      <div class="auth-divider"></div>
+      <p class="auth-subtitle">Система управления · СБУ</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Вход</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+    </div>
+    <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+      <div class="form-group"><label><i class="fas fa-user"></i> Логин или Discord ID</label><input type="text" id="loginUsername" required></div>
+      <div class="form-group"><label><i class="fas fa-lock"></i> Пароль</label><input type="password" id="loginPassword" required></div>
+      <div class="form-group"><label><i class="fab fa-steam"></i> Steam ID</label><input type="text" id="loginSteamId" placeholder="STEAM_0:0:000000000"></div>
+      <div id="loginError" class="form-error hidden"></div>
+      <button type="submit" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</button>
+    </form>
+    <form id="registerForm" class="auth-form hidden" onsubmit="handleRegister(event)">
+      <div class="form-group"><label><i class="fas fa-user"></i> Имя пользователя</label><input type="text" id="regUsername" required></div>
+      <div class="form-group"><label><i class="fab fa-discord"></i> Discord ID</label><input type="text" id="regDiscordId" required></div>
+      <div class="form-group"><label><i class="fab fa-steam"></i> Steam ID</label><input type="text" id="regSteamId"></div>
+      <div class="form-group"><label><i class="fas fa-lock"></i> Пароль</label><input type="password" id="regPassword" required></div>
+      <div class="form-group"><label><i class="fas fa-lock"></i> Повторите пароль</label><input type="password" id="regPassword2" required></div>
+      <div id="regError" class="form-error hidden"></div>
+      <button type="submit" class="btn-primary"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
+    </form>
+  </div>
+  <div class="auth-footer"><span class="secure-badge"><i class="fas fa-lock"></i> Защищено</span><span>ФЕМИДА · MST</span></div>
+</div>
+
+<div id="dashboardPage" class="dashboard-container hidden">
+  <div class="user-welcome-box">
+    <img id="dashAvatar" src="" class="user-avatar-lg">
+    <div class="user-info-block">
+      <div class="user-greeting">Добро пожаловать,</div>
+      <div id="dashUsername" class="user-name-lg"></div>
+      <div id="dashDiscordId" class="user-discord-id"></div>
+    </div>
+  </div>
+  <div class="portal-buttons-wrap">
+    <div class="portal-card" onclick="openCitizen()">
+      <img src="https://yandex-images.clstorage.net/N5M4bT167/7a111ftSk3/zYKHE8hhdvhEpbkMrxfGPDRctDIhFSAFRg2ZJeQJLPfYlnfd-a6SZ26ZodL8wqDFvtWhkSUYPLmdQD5OgLc-Yo7QxUCNPzH4QbHyBuMNyiwhEKlxNFc5AUFUlXLdNFyFrf8PvYLeuU8gwevBu_jOgd3T3-ssLRXpz38JWqjuQhX0rpoG3msW-1aS3Ti6GvsBFiarGD18A3VKO9YD5SNfo4zkKLa_8ZpAKM-V36HC8tbn3NfcNDIh8MV0I3elw3Yw7oa1F9BAG-VEhdwjtCHVLioknR0FYAVCbBnqF-QmUKWO5RakgOGeWRPwtNu40_DI4tzxxx8yCPnZUB1dvvxBAPy6oxDSRjHTZr_mJI8R5zwkOK0kMkMjV2Ub1w7LOUiwvMUXiIz-t3g18KDjqunk4N_G-tQ_DAD88lAIVKj9diHtl5Y--XQd_XSl8DSEIMQTHwOjDxpRPX5IH-UO0B9xsobsE56Z0Z5INfST46fS0MfZ5efLHwo-4thLK2SIykU19baDH_N1GfhmtN0ftjPVHx46rxInaS1OaBv3CNQvbJO30wuBueiKbTrtvfKG8OHk8dPlywAJOObrayhBg8pOO9i0pzvrcwvNaZzgD4AD8TAuHbgeAnMifFYGxTnOOnm3tfUOiqfPuk4c46Dml-nm1e_y6uo3HjTZzHEWQoHMTQP5s6kh9n8L2lCO3zO6NOgVCRaUBw10GXB7GcYD1yJIrL_BGqG4-59XH9ir_qPE4OjYyPHTHT8248J3DmO01GsGz4ijCu5qNv10pe4DpwnmKTs9uBAwdAhQZifBFcQ5W5eByRq8vdWUUS7Vi8qt9v3z_MXU6BYsLtjBdTB7g_xXB9qAlQv3YCrcWIbgJoEB1xYJC6w2HXcFcUI_xS_vCVmKhdcMjY7qnHksxpDGltHzw9_c9OoINCPY4VMhZrjLVS_-oKo7yH4r70yR8xS_L8QgLRGSOTlTOktGJeEX5i8" class="portal-card-img" onerror="this.style.display='none'">
+      <div class="portal-card-body"><div class="portal-icon"><i class="fas fa-id-card"></i></div><div class="portal-title">Гражданин</div><div class="portal-sub">Кабинет обращений</div></div>
+    </div>
+    <div class="portal-card" onclick="openEmployeeAuth()">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png" class="portal-card-img" style="filter:brightness(.5) saturate(.6)">
+      <div class="portal-card-body"><div class="portal-icon" style="color:#9a9080"><i class="fas fa-shield-alt"></i></div><div class="portal-title">Сотрудник</div><div class="portal-sub">Служебный вход</div></div>
+    </div>
+    <div class="portal-card hidden" id="adminCard" onclick="openAdminPortal()">
+      <img src="https://i.pinimg.com/736x/a4/10/ca/a410ca08b855e6ce6971f50e5d9ea96a.jpg" class="portal-card-img" style="object-fit:cover">
+      <div class="portal-card-body"><div class="portal-icon" style="color:var(--danger)"><i class="fas fa-user-secret"></i></div><div class="portal-title">Админ</div><div class="portal-sub">Управление</div></div>
+    </div>
+  </div>
+  <div class="dash-footer"><span class="secure-badge"><i class="fas fa-lock"></i> Защищено</span><span>ФЕМИДА · MST</span><button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выйти</button></div>
+</div>
+
+<div id="employeeAuthModal" class="modal-overlay hidden">
+  <div class="modal-box small-modal">
+    <div class="modal-header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png" class="sbu-logo-img">
+      <h2>Служебный вход</h2>
+      <button class="modal-close" onclick="closeModal('employeeAuthModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:24px 28px">
+      <form onsubmit="handleEmployeeAuth(event)" class="auth-form">
+        <div class="form-group"><label><i class="fab fa-steam"></i> Steam ID</label><input type="text" id="empSteamId" required></div>
+        <div class="form-group"><label><i class="fas fa-lock"></i> Пароль</label><input type="password" id="empPassword" required></div>
+        <div id="empAuthError" class="form-error hidden"></div>
+        <button type="submit" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "твое",
+  authDomain: "твое",
+  databaseURL: "твое",
+  projectId: "твое",
+  storageBucket: "твое",
+  messagingSenderId: "твое",
+  appId: "твое"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let CURRENT_USER = null;
+
+const R = path => db.ref(path);
+const readOnce = async p => (await R(p).once('value')).val();
+const writeData = async (p, d) => await R(p).set(d);
+const pushData = async (p, d) => { const r = R(p).push(); await r.set(d); return r.key; };
+const updateData = async (p, d) => await R(p).update(d);
+const removeData = async p => await R(p).remove();
+const saveSession = u => localStorage.setItem('femida_session', JSON.stringify(u));
+const getSession = () => { try { return JSON.parse(localStorage.getItem('femida_session')); } catch { return null; } };
+const clearSession = () => localStorage.removeItem('femida_session');
+const showErr = (el, msg) => { el.textContent = msg; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 4000); };
+const closeModal = id => document.getElementById(id).classList.add('hidden');
+const hideAll = () => { ['authPage','dashboardPage'].forEach(id => document.getElementById(id)?.classList.add('hidden')); ['employeePortal','citizenPortal','adminPortal'].forEach(id => document.getElementById(id)?.remove()); };
+const uAvatar = () => CURRENT_USER?.avatar || 'https://ui-avatars.com/api/?name=U&background=222&color=e8c96d';
+const badge = s => { const m = {new:['Новое','status-new'],review:['На рассмотрении','status-review'],done:['Решено','status-done'],active:['Активна','status-active'],closed:['Закрыто','status-closed'],cancelled:['Аннулирована','status-closed']}; const [t,c] = m[s]||['—','status-closed']; return `<span class="status-badge ${c}">${t}</span>`; };
+const emptyState = t => `<div class="empty-state"><i class="fas fa-inbox"></i><p>${t}</p></div>`;
+const showToast = msg => { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`; document.body.appendChild(t); setTimeout(() => t.remove(), 2800); };
+const toggleDrop = id => document.getElementById(id)?.classList.toggle('hidden');
+
+async function addLog(actor, action) {
+  await pushData('activity_log', { actor, action, time: new Date().toTimeString().split(' ')[0], ts: Date.now() });
+}
+
+let _dlgEl = null;
+function dlg(html) { closeDlg(); _dlgEl = document.createElement('div'); _dlgEl.className = 'detail-overlay'; _dlgEl.innerHTML = `<div class="detail-box">${html}</div>`; _dlgEl.addEventListener('click', e => { if (e.target === _dlgEl) closeDlg(); }); document.body.appendChild(_dlgEl); }
+function closeDlg() { if (_dlgEl) { _dlgEl.remove(); _dlgEl = null; } }
+
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const s = getSession();
+    if (s) {
+      const user = await readOnce(`users/${s.id}`);
+      if (user) { CURRENT_USER = { ...user, id: s.id }; document.getElementById('loadingOverlay').classList.add('hidden'); showDashboard(); return; }
+      clearSession();
+    }
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('disclaimerModal').classList.remove('hidden');
+  } catch (e) { console.error(e); document.getElementById('loadingOverlay').innerHTML = '<div style="color:var(--danger)">Ошибка БД</div>'; }
+});
+
+function acceptDisclaimer() { document.getElementById('disclaimerModal').classList.add('hidden'); document.getElementById('authPage').classList.remove('hidden'); }
+function switchAuthTab(tab) { document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register'))); document.getElementById('loginForm').classList.toggle('hidden', tab!=='login'); document.getElementById('registerForm').classList.toggle('hidden', tab!=='register'); }
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const login = document.getElementById('loginUsername').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const steam = document.getElementById('loginSteamId').value.trim();
+  const err = document.getElementById('loginError');
+  const users = await readOnce('users') || {};
+  const uid = Object.keys(users).find(id => users[id].username === login || users[id].discord_id === login);
+  if (!uid) return showErr(err, 'Пользователь не найден');
+  if (users[uid].password !== btoa(pass)) return showErr(err, 'Неверный пароль');
+  if (steam) { await updateData(`users/${uid}`, { steam_id: steam }); users[uid].steam_id = steam; }
+  CURRENT_USER = { ...users[uid], id: uid };
+  saveSession({ id: uid });
+  await addLog(users[uid].username, 'Авторизовался в системе');
+  showDashboard();
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const username = document.getElementById('regUsername').value.trim();
+  const discordId = document.getElementById('regDiscordId').value.trim();
+  const steamId = document.getElementById('regSteamId').value.trim();
+  const pass = document.getElementById('regPassword').value;
+  const pass2 = document.getElementById('regPassword2').value;
+  const err = document.getElementById('regError');
+  if (!username || !discordId || !pass) return showErr(err, 'Заполните все поля');
+  if (pass !== pass2) return showErr(err, 'Пароли не совпадают');
+  if (pass.length < 6) return showErr(err, 'Пароль минимум 6 символов');
+  const users = await readOnce('users') || {};
+  if (Object.values(users).some(u => u.username === username)) return showErr(err, 'Логин занят');
+  if (Object.values(users).some(u => u.discord_id === discordId)) return showErr(err, 'Discord ID занят');
+  const id = Date.now().toString();
+  const data = { username, discord_id: discordId, steam_id: steamId || '', password: btoa(pass), avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=222222&color=e8c96d&bold=true`, rank: '', dept: '', position: '', status: '', vacation: '', is_employee: false, created_at: new Date().toISOString() };
+  await writeData(`users/${id}`, data);
+  CURRENT_USER = { ...data, id };
+  saveSession({ id });
+  await addLog(username, 'Зарегистрировался');
+  showDashboard();
+}
+
+async function openEmployeeAuth() {
+  if (CURRENT_USER?.is_employee && CURRENT_USER?.steam_id) { await addLog(CURRENT_USER.username, 'Вошёл как сотрудник'); showEmployeePortal(); return; }
+  document.getElementById('employeeAuthModal').classList.remove('hidden');
+}
+
+async function handleEmployeeAuth(e) {
+  e.preventDefault();
+  const steam = document.getElementById('empSteamId').value.trim();
+  const pass = document.getElementById('empPassword').value;
+  const err = document.getElementById('empAuthError');
+  const users = await readOnce('users') || {};
+  const uid = Object.keys(users).find(id => users[id].steam_id === steam);
+  if (!uid) return showErr(err, 'Steam ID не найден');
+  if (users[uid].password !== btoa(pass)) return showErr(err, 'Неверный пароль');
+  if (!users[uid].is_employee) return showErr(err, 'Доступ запрещён. Обратитесь к Админу.');
+  CURRENT_USER = { ...users[uid], id: uid };
+  saveSession({ id: uid });
+  closeModal('employeeAuthModal');
+  await addLog(users[uid].username, 'Вошёл как сотрудник');
+  showEmployeePortal();
+}
+
+function showDashboard() {
+  hideAll();
+  document.getElementById('dashboardPage').classList.remove('hidden');
+  document.getElementById('dashAvatar').src = CURRENT_USER.avatar;
+  document.getElementById('dashUsername').textContent = CURRENT_USER.username;
+  const parts = [];
+  if (CURRENT_USER.discord_id) parts.push('Discord: ' + CURRENT_USER.discord_id);
+  if (CURRENT_USER.steam_id) parts.push('Steam: ' + CURRENT_USER.steam_id);
+  document.getElementById('dashDiscordId').textContent = parts.join(' · ');
+  document.getElementById('adminCard').classList.toggle('hidden', !['Admin','admin','shultzSBU'].includes(CURRENT_USER.username));
+}
+
+function logout() { clearSession(); CURRENT_USER = null; hideAll(); document.getElementById('authPage').classList.remove('hidden'); }
+
+async function openCitizen() { hideAll(); await renderCitizenPortal(); }
+
+async function renderCitizenPortal() {
+  const allN = await readOnce('notifications') || {};
+  const cn = Object.entries(allN).filter(([_, n]) => n.type !== 'sensitive' && !n.is_read).map(([id, n]) => ({ id, ...n })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  const el = document.createElement('div');
+  el.id = 'citizenPortal'; el.className = 'citizen-container';
+  el.innerHTML = `
+    <div class="top-bar">
+      <div class="topbar-left"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png" class="sbu-logo-img-sm"><div><div class="topbar-title">Портал гражданина</div><div class="topbar-subtitle">Кабинет обращений</div></div></div>
+      <div class="topbar-right">
+        <div style="position:relative"><button class="notif-btn" onclick="toggleDrop('cNotifDrop')"><i class="fas fa-bell"></i>${cn.length ? `<span class="notif-count">${cn.length}</span>` : ''}</button>
+          <div class="notif-dropdown hidden" id="cNotifDrop"><div class="notif-header"><span class="notif-header-title">Уведомления</span><button class="notif-clear-btn" onclick="markReadCitizen()"><i class="fas fa-check"></i> Прочитано</button></div>${cn.map(n => `<div class="notif-item"><div class="notif-item-title">${n.title}</div><div class="notif-item-text">${n.text}</div></div>`).join('') || '<div class="notif-item">Нет уведомлений</div>'}</div>
+        </div>
+        <div class="topbar-user"><img src="${uAvatar()}" class="topbar-avatar"><span class="topbar-username">${CURRENT_USER?.username || ''}</span></div>
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Назад</button>
+      </div>
+    </div>
+    <div class="portal-tabs"><button class="portal-tab active" onclick="switchCTab('new',this)"><i class="fas fa-plus-circle"></i> Новое обращение</button><button class="portal-tab" onclick="switchCTab('my',this)"><i class="fas fa-list"></i> Мои обращения</button><button class="portal-tab" onclick="switchCTab('conv',this)"><i class="fas fa-gavel"></i> Судимости</button></div>
+    <div style="flex:1;overflow-y:auto">
+      <div id="ctab-new" class="tab-content active"><div class="section-title"><i class="fas fa-file-alt"></i> Подача заявления</div>
+        <div class="form-card"><form id="appealForm" onsubmit="submitAppeal(event)" style="display:flex;flex-direction:column;gap:16px">
+          <div class="form-row"><div class="form-group"><label><i class="fas fa-user"></i> ФИО</label><input type="text" id="aFio" required></div><div class="form-group"><label><i class="fas fa-briefcase"></i> Должность</label><input type="text" id="aPos"></div></div>
+          <div class="form-group"><label><i class="fas fa-tag"></i> Тема</label><select id="aTheme" onchange="document.getElementById('aCustomWrap').classList.toggle('hidden',this.value!=='Иное')" required><option value="">Выберите...</option><option>Сообщение о преступлении</option><option>Жалоба на гос. служащего</option><option>Запрос информации</option><option value="Иное">Иное</option></select></div>
+          <div class="form-group hidden" id="aCustomWrap"><label>Заголовок</label><input type="text" id="aCustom"></div>
+          <div class="form-group"><label><i class="fas fa-link"></i> Доказательства</label><input type="url" id="aEvidence"></div>
+          <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="aDesc" rows="6" required></textarea></div>
+          <div id="appealOk" class="appeal-success hidden"><i class="fas fa-check-circle"></i> Отправлено!</div>
+          <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Отправить</button>
+        </form></div>
+      </div>
+      <div id="ctab-my" class="tab-content"><div class="section-title"><i class="fas fa-folder-open"></i> Мои обращения</div><div id="myAppList"></div></div>
+      <div id="ctab-conv" class="tab-content"><div class="section-title"><i class="fas fa-gavel"></i> Мои судимости</div><div id="myConvList"></div></div>
+    </div>`;
+  document.body.appendChild(el);
+}
+
+function switchCTab(id, btn) { document.querySelectorAll('#citizenPortal .portal-tab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('#citizenPortal .tab-content').forEach(t => t.classList.remove('active')); document.getElementById('ctab-' + id).classList.add('active'); if (id === 'my') renderMyAppeals(); if (id === 'conv') renderMyConv(); }
+
+async function submitAppeal(e) {
+  e.preventDefault();
+  const theme = document.getElementById('aTheme').value;
+  const finalTheme = theme === 'Иное' ? (document.getElementById('aCustom').value.trim() || 'Иное') : theme;
+  await pushData('appeals', { date: new Date().toISOString().split('T')[0], applicant: document.getElementById('aFio').value.trim(), position: document.getElementById('aPos').value.trim(), theme: finalTheme, description: document.getElementById('aDesc').value.trim(), status: 'new', evidence: document.getElementById('aEvidence').value.trim(), user_id: CURRENT_USER.id, ts: Date.now() });
+  await pushData('notifications', { title: 'Новое обращение', text: `От ${document.getElementById('aFio').value.trim()}`, type: 'normal', is_read: false, ts: Date.now() });
+  document.getElementById('appealForm').reset();
+  document.getElementById('aCustomWrap').classList.add('hidden');
+  const ok = document.getElementById('appealOk'); ok.classList.remove('hidden'); setTimeout(() => ok.classList.add('hidden'), 4000);
+  await addLog(CURRENT_USER.username, 'Подал обращение: ' + finalTheme);
+}
+
+async function renderMyAppeals() {
+  const all = await readOnce('appeals') || {};
+  const list = Object.entries(all).filter(([_, a]) => a.user_id === CURRENT_USER.id).map(([id, a]) => ({ id, ...a })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  const el = document.getElementById('myAppList');
+  if (!list.length) { el.innerHTML = emptyState('Обращений нет'); return; }
+  el.innerHTML = `<div class="appeals-list">${list.map(a => `<div class="appeal-card" onclick="dlgMyAppeal('${a.id}')"><div><div class="appeal-number">#${a.id.substring(0, 8)}</div><div class="appeal-theme">${a.theme}</div><div class="appeal-desc">${(a.description||'').substring(0, 120)}...</div><div class="appeal-meta"><i class="fas fa-calendar"></i> ${a.date}</div></div>${badge(a.status)}</div>`).join('')}</div>`;
+}
+
+async function dlgMyAppeal(id) {
+  const a = await readOnce(`appeals/${id}`); if (!a) return;
+  const canW = a.status === 'new' || a.status === 'review';
+  dlg(`<div class="detail-header"><div><div style="color:var(--accent);font-weight:700">#${id.substring(0, 8)}</div>${badge(a.status)}</div><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><div class="info-grid" style="margin-bottom:16px"><div class="info-row"><div class="info-label">Тема</div><div style="color:var(--accent)">${a.theme}</div></div><div class="info-row"><div class="info-label">Дата</div><div>${a.date}</div></div>${a.evidence ? `<div class="info-row"><div class="info-label">Доказательства</div><div><a href="${a.evidence}" target="_blank" style="color:var(--accent)">${a.evidence}</a></div></div>` : ''}</div><div style="background:var(--bg-700);padding:16px;border-radius:8px;margin-bottom:16px"><div style="color:var(--text);line-height:1.7">${a.description||''}</div></div><div style="display:flex;gap:8px;justify-content:flex-end">${canW ? `<button class="btn-danger" onclick="withdrawAppeal('${id}')"><i class="fas fa-undo"></i> Отозвать</button>` : ''}<button class="btn-secondary" onclick="closeDlg()">Закрыть</button></div></div>`);
+}
+
+async function withdrawAppeal(id) { await removeData(`appeals/${id}`); closeDlg(); renderMyAppeals(); showToast('Отозвано'); }
+
+async function renderMyConv() {
+  const all = await readOnce('convictions') || {};
+  const list = Object.entries(all).filter(([_, c]) => c.discord_id === CURRENT_USER.discord_id).map(([id, c]) => ({ id, ...c }));
+  const el = document.getElementById('myConvList');
+  if (!list.length) { el.innerHTML = '<div class="empty-state" style="color:var(--success)"><i class="fas fa-check-circle"></i><p>Судимостей нет</p></div>'; return; }
+  el.innerHTML = list.map(c => `<div class="conviction-card"><div class="conviction-header"><span class="conviction-id">#${c.id.substring(0, 8)}</span>${badge(c.status)}</div><div class="conviction-articles">${(c.text||'').split(',').map(t => `<span class="article-tag">${t.trim()}</span>`).join('')}</div><div class="conviction-meta">Наложена: ${c.imposed} · ${c.duration > 0 ? `${c.duration} сут.` : 'Бессрочная'}</div>${c.fine ? `<div class="conviction-fine">Погашение: ${c.fine.toLocaleString()} $</div>` : ''}<div class="conviction-meta">Выдал: ${c.issuer}</div></div>`).join('');
+}
+
+async function markReadCitizen() {
+  const all = await readOnce('notifications') || {};
+  for (const [id, n] of Object.entries(all)) { if (n.type !== 'sensitive' && !n.is_read) await updateData(`notifications/${id}`, { is_read: true }); }
+  document.getElementById('cNotifDrop')?.classList.add('hidden');
+  document.querySelectorAll('#citizenPortal .notif-count').forEach(b => b.remove());
+  showToast('Прочитано');
+}
+
+async function showEmployeePortal() {
+  hideAll();
+  const allW = await readOnce('wanted') || {};
+  const wCount = Object.values(allW).filter(w => w.status === 'active').length;
+  const allA = await readOnce('appeals') || {};
+  const aNew = Object.values(allA).filter(a => a.status === 'new').length;
+  const allN = await readOnce('notifications') || {};
+  const nCount = Object.values(allN).filter(n => !n.is_read).length;
+  const nav = [{id:'summary',icon:'fas fa-tachometer-alt',label:'Сводка'},{id:'profile',icon:'fas fa-id-card',label:'Профиль'},{id:'wanted',icon:'fas fa-search',label:'Ориентировки',badge:wCount},{id:'cases',icon:'fas fa-folder',label:'Уг. дела'},{id:'protocols',icon:'fas fa-clipboard-list',label:'Протоколы'},{id:'appeals',icon:'fas fa-envelope',label:'Обращения',badge:aNew},{id:'military',icon:'fas fa-user-shield',label:'Военные'},{id:'citizens',icon:'fas fa-users',label:'Граждане'},{id:'convictions',icon:'fas fa-gavel',label:'Судимости'}];
+  const el = document.createElement('div'); el.id = 'employeePortal'; el.className = 'employee-container';
+  el.innerHTML = `
+    <div class="top-bar">
+      <div class="topbar-left"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg/1280px-%D0%A8%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82_%D0%93%D0%BE%D0%BB%D0%BE%D0%B2%D0%B8_%D0%A1%D0%91%D0%A3_rect.svg.png" class="sbu-logo-img-sm"><div><div class="topbar-title">ФЕМИДА</div><div class="topbar-subtitle" style="color:var(--success)"><i class="fas fa-lock"></i> Защищено</div></div></div>
+      <div class="topbar-right">
+        <div style="position:relative"><button class="notif-btn" onclick="toggleDrop('eNotifDrop')"><i class="fas fa-bell"></i>${nCount ? `<span class="notif-count">${nCount}</span>` : ''}</button>
+          <div class="notif-dropdown hidden" id="eNotifDrop"><div class="notif-header"><span class="notif-header-title">Уведомления</span><button class="notif-clear-btn" onclick="markReadEmp()"><i class="fas fa-check"></i> Прочитано</button></div><div id="eNotifList"></div></div>
+        </div>
+        <div class="topbar-user"><img src="${uAvatar()}" class="topbar-avatar"><span class="topbar-username">${CURRENT_USER?.username||''}</span></div>
+        <button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Выход</button>
+      </div>
+    </div>
+    <div class="employee-layout">
+      <div class="sidebar" id="empSidebar"><div class="sidebar-section">Навигация</div>${nav.map(n => `<div class="sidebar-item${n.id==='summary'?' active':''}" onclick="switchEmpTab('${n.id}',this)"><i class="${n.icon}"></i><span>${n.label}</span>${n.badge ? `<span class="sidebar-badge">${n.badge}</span>` : ''}</div>`).join('')}<div class="sidebar-section" style="margin-top:16px">Аккаунт</div><div class="sidebar-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Выйти</span></div></div>
+      <div class="emp-main" id="empMain"></div>
+    </div>`;
+  document.body.appendChild(el);
+  await loadEmpNotifs();
+  await switchEmpTab('summary', document.querySelector('#empSidebar .sidebar-item'));
+}
+
+async function loadEmpNotifs() {
+  const all = await readOnce('notifications') || {};
+  const list = Object.entries(all).filter(([_, n]) => !n.is_read).map(([id, n]) => ({ id, ...n })).sort((a, b) => (b.ts||0) - (a.ts||0)).slice(0, 20);
+  const el = document.getElementById('eNotifList');
+  if (el) el.innerHTML = list.map(n => `<div class="notif-item"><div class="notif-item-title">${n.title}</div><div class="notif-item-text">${n.text}</div></div>`).join('') || '<div class="notif-item">Нет уведомлений</div>';
+}
+
+async function markReadEmp() {
+  const all = await readOnce('notifications') || {};
+  for (const [id, n] of Object.entries(all)) { if (!n.is_read) await updateData(`notifications/${id}`, { is_read: true }); }
+  document.getElementById('eNotifDrop')?.classList.add('hidden');
+  document.querySelectorAll('#employeePortal .notif-count').forEach(b => b.remove());
+  showToast('Прочитано');
+}
+
+async function switchEmpTab(id, el) {
+  document.querySelectorAll('#empSidebar .sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const main = document.getElementById('empMain');
+  const fns = { summary: tplSummary, profile: tplProfile, wanted: tplWanted, cases: tplCases, protocols: tplProtocols, appeals: tplAppeals, military: tplMilitary, citizens: tplCitizens, convictions: tplConvictions };
+  if (fns[id]) main.innerHTML = await fns[id]();
+}
+
+async function tplSummary() {
+  const cases = await readOnce('cases') || {};
+  const wanted = await readOnce('wanted') || {};
+  const appeals = await readOnce('appeals') || {};
+  const logs = await readOnce('activity_log') || {};
+  const cC = Object.keys(cases).length;
+  const wC = Object.values(wanted).filter(w => w.status === 'active').length;
+  const newA = Object.values(appeals).filter(a => a.status === 'new');
+  const logArr = Object.values(logs).sort((a, b) => (b.ts||0) - (a.ts||0)).slice(0, 15);
+  return `<div class="secure-header-line"><i class="fas fa-lock"></i> Защищено</div><div class="section-title"><i class="fas fa-tachometer-alt"></i> Сводка</div><div class="dash-cards"><div class="dash-card"><div class="dash-card-val">${cC}</div><div class="dash-card-label">Дела</div></div><div class="dash-card"><div class="dash-card-val">${wC}</div><div class="dash-card-label">В розыске</div></div><div class="dash-card"><div class="dash-card-val" style="color:var(--success)">1</div><div class="dash-card-label">Онлайн</div></div><div class="dash-card"><div class="dash-card-val" style="color:var(--warning)">${newA.length}</div><div class="dash-card-label">Новые</div></div></div>${newA.length ? `<div class="new-appeals-widget"><div class="widget-title">Новые обращения</div>${newA.slice(0, 5).map(a => `<div class="widget-item"><span>${a.theme}</span>${badge(a.status)}</div>`).join('')}</div>` : ''}<div class="activity-log"><div class="log-header">Лог</div>${logArr.map(l => `<div class="log-item"><span class="log-actor">${l.actor}</span><span class="log-action">${l.action}</span><span class="log-time">${l.time}</span></div>`).join('')}</div>`;
+}
+
+async function tplProfile() {
+  const u = CURRENT_USER;
+  const fields = [['username','ФИО'],['rank','Звание'],['dept','Отдел'],['position','Должность'],['status','Статус'],['vacation','Отпуск']];
+  return `<div class="secure-header-line"><i class="fas fa-lock"></i> Защищено</div><div class="section-title"><i class="fas fa-id-card"></i> Профиль</div><div class="profile-header"><img src="${uAvatar()}" class="profile-avatar"><div><div class="profile-name">${u.username}</div><div class="profile-rank">${u.rank||'—'} · ${u.position||'—'} — ${u.dept||'—'}</div><div class="profile-ids"><div class="profile-id-item"><i class="fab fa-steam"></i> ${u.steam_id||'—'}</div><div class="profile-id-item"><i class="fab fa-discord"></i> ${u.discord_id||'—'}</div></div></div></div><div class="section-title" style="font-size:.8rem"><i class="fas fa-cog"></i> Информация</div><div class="info-grid">${fields.map(([k, l]) => `<div class="info-row"><div class="info-label">${l}</div><input class="info-input" id="pf-${k}" value="${u[k]||''}"></div>`).join('')}</div><div style="margin-top:12px"><button class="save-btn" onclick="saveProfile()"><i class="fas fa-save"></i> Сохранить</button></div>`;
+}
+
+async function saveProfile() {
+  const data = {};
+  ['username','rank','dept','position','status','vacation'].forEach(k => { data[k] = document.getElementById('pf-' + k).value; });
+  await updateData(`users/${CURRENT_USER.id}`, data);
+  CURRENT_USER = { ...CURRENT_USER, ...data };
+  saveSession({ id: CURRENT_USER.id });
+  await addLog(CURRENT_USER.username, 'Обновил профиль');
+  showToast('Сохранено');
+}
+
+async function tplWanted() {
+  const all = await readOnce('wanted') || {};
+  const list = Object.entries(all).map(([id, w]) => ({ id, ...w })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-search"></i> Ориентировки</div><div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="submit-btn" style="padding:9px 18px;font-size:.8rem" onclick="dlgAddWanted()"><i class="fas fa-plus"></i> Добавить</button></div><div class="wanted-grid">${list.map(w => `<div class="wanted-card" onclick="dlgWanted('${w.id}')"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="orient-num">№${w.id.substring(0, 6)}</div>${badge(w.status)}</div><div class="wanted-name">${w.name}</div><div class="wanted-rank">${w.rank} | ${w.unit}</div>${w.articles ? `<div class="conviction-articles" style="margin-top:6px">${w.articles.split(',').map(a => `<span class="article-tag">${a}</span>`).join('')}</div>` : ''}</div>`).join('')}</div>`;
+}
+
+async function dlgWanted(id) {
+  const w = await readOnce(`wanted/${id}`); if (!w) return;
+  dlg(`<div class="detail-header"><div><div class="orient-num">№${id.substring(0, 6)}</div>${badge(w.status)}</div><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><div class="info-grid" style="margin-bottom:16px"><div class="info-row"><div class="info-label">Подразделение</div><div>${w.unit}</div></div><div class="info-row"><div class="info-label">Звание</div><div>${w.rank}</div></div><div class="info-row"><div class="info-label">ФИО</div><div>${w.name}</div></div><div class="info-row"><div class="info-label">Позывной</div><div>${w.callsign}</div></div></div>${w.articles ? `<div style="margin-bottom:14px"><div class="conviction-articles">${w.articles.split(',').map(a => `<span class="article-tag">${a}</span>`).join('')}</div></div>` : ''}<div style="color:var(--text-dim);font-size:.75rem;margin-bottom:16px">Оформил: ${w.issuer} · ${w.date}</div><div style="display:flex;gap:8px"><button class="btn-success" onclick="updWanted('${id}','closed')"><i class="fas fa-check"></i> Снять</button><button class="btn-secondary" onclick="closeDlg()">Закрыть</button></div></div>`);
+}
+
+async function updWanted(id, s) { await updateData(`wanted/${id}`, { status: s }); closeDlg(); switchEmpTab('wanted', document.querySelector('#empSidebar .sidebar-item:nth-child(4)')); }
+
+function dlgAddWanted() {
+  dlg(`<div class="detail-header"><h3 style="color:var(--accent)">Новая ориентировка</h3><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><form onsubmit="addWanted(event)" style="display:flex;flex-direction:column;gap:14px"><div class="form-row"><div class="form-group"><label>ФИО</label><input name="name"></div><div class="form-group"><label>Позывной</label><input name="callsign"></div></div><div class="form-row"><div class="form-group"><label>Звание</label><input name="rank"></div><div class="form-group"><label>Подразделение</label><input name="unit" required></div></div><div class="form-group"><label>Статьи</label><input name="articles"></div><button type="submit" class="submit-btn"><i class="fas fa-plus"></i> Добавить</button></form></div>`);
+}
+
+async function addWanted(e) {
+  e.preventDefault();
+  const d = new FormData(e.target);
+  await pushData('wanted', { name: d.get('name')||'-', callsign: d.get('callsign')||'-', rank: d.get('rank')||'-', unit: d.get('unit'), articles: d.get('articles')||'', issuer: `"${CURRENT_USER.username}"`, date: new Date().toISOString().split('T')[0], status: 'active', ts: Date.now() });
+  await pushData('notifications', { title: 'Новый розыск', text: `На ${d.get('name')}`, type: 'sensitive', is_read: false, ts: Date.now() });
+  await addLog(`"${CURRENT_USER.username}"`, `Ориентировка на ${d.get('name')}`);
+  closeDlg(); switchEmpTab('wanted', document.querySelector('#empSidebar .sidebar-item:nth-child(4)'));
+}
+
+async function tplCases() {
+  const all = await readOnce('cases') || {};
+  const list = Object.entries(all).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-folder"></i> Уголовные дела</div><div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="submit-btn" style="padding:9px 18px;font-size:.8rem" onclick="dlgAddCase()"><i class="fas fa-plus"></i> Новое дело</button></div><div class="cases-list">${list.map(c => `<div class="case-card" onclick="dlgCase('${c.id}')"><div class="case-num">#${c.id.substring(0, 6)}</div><div class="case-info"><div class="case-title">${c.title}</div><div class="case-author">${c.author}</div></div>${c.articles ? `<div class="conviction-articles">${c.articles.split(',').map(a => `<span class="article-tag">${a}</span>`).join('')}</div>` : ''}</div>`).join('')}</div>`;
+}
+
+async function dlgCase(id) {
+  const c = await readOnce(`cases/${id}`); if (!c) return;
+  dlg(`<div class="detail-header"><div class="case-num">#${id.substring(0, 6)}</div><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><div style="font-size:.95rem;font-weight:600;margin-bottom:12px">${c.title}</div>${c.articles ? `<div class="conviction-articles" style="margin-bottom:14px">${c.articles.split(',').map(a => `<span class="article-tag">${a}</span>`).join('')}</div>` : ''}${c.description ? `<p style="color:var(--text-muted);line-height:1.7;margin-bottom:14px">${c.description}</p>` : ''}<div style="color:var(--text-dim);font-size:.78rem">Автор: ${c.author}</div><button class="btn-secondary" style="margin-top:16px" onclick="closeDlg()">Закрыть</button></div>`);
+}
+
+function dlgAddCase() {
+  dlg(`<div class="detail-header"><h3 style="color:var(--accent)">Новое дело</h3><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><form onsubmit="addCase(event)" style="display:flex;flex-direction:column;gap:14px"><div class="form-group"><label>Название</label><input name="title" required></div><div class="form-group"><label>Статьи</label><input name="articles"></div><div class="form-group"><label>Описание</label><textarea name="desc" rows="3"></textarea></div><button type="submit" class="submit-btn"><i class="fas fa-plus"></i> Создать</button></form></div>`);
+}
+
+async function addCase(e) {
+  e.preventDefault();
+  const d = new FormData(e.target);
+  const key = await pushData('cases', { title: d.get('title'), author: `"${CURRENT_USER.username}"`, articles: d.get('articles')||'', description: d.get('desc')||'', ts: Date.now() });
+  await addLog(`"${CURRENT_USER.username}"`, `Открыл дело #${key.substring(0, 6)}`);
+  closeDlg(); switchEmpTab('cases', document.querySelector('#empSidebar .sidebar-item:nth-child(5)'));
+}
+
+async function tplProtocols() {
+  const all = await readOnce('protocols') || {};
+  const list = Object.entries(all).map(([id, p]) => ({ id, ...p })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-clipboard-list"></i> Протоколы</div><div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="submit-btn" style="padding:9px 18px;font-size:.8rem" onclick="dlgAddProtocol()"><i class="fas fa-plus"></i> Выписать</button></div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Дата</th><th>Нарушитель</th><th>Наказание</th><th>Статьи</th><th>Инспектор</th></tr></thead><tbody>${list.map(p => `<tr style="cursor:pointer" onclick="dlgProtocol('${p.id}')"><td>${p.date}</td><td><div style="font-weight:600">${p.violator}</div><div style="color:var(--text-dim);font-size:.72rem">${p.violator_status||'-'}</div></td><td style="color:var(--warning);font-weight:600">${p.punishment}</td><td><div class="conviction-articles">${(p.articles||'').split(',').map(a => `<span class="article-tag">${a.trim()}</span>`).join('')}</div></td><td style="color:var(--accent)">${p.inspector}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function dlgAddProtocol() {
+  dlg(`<div class="detail-header"><h3 style="color:var(--accent)">Выписать протокол</h3><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><form onsubmit="addProtocol(event)" style="display:flex;flex-direction:column;gap:14px"><div class="form-row"><div class="form-group"><label>ФИО / Позывной</label><input name="violator" id="pr-violator" required></div><div class="form-group"><label>Подразделение</label><input name="unit" id="pr-unit" placeholder="-"></div></div><div class="form-row"><div class="form-group"><label>Звание</label><input name="rank" id="pr-rank" placeholder="-"></div><div class="form-group"><label>Наказание</label><input name="punishment" id="pr-punishment" placeholder="60 суток" required></div></div><div class="form-group"><label>Статьи (через запятую)</label><input name="articles" id="pr-articles" placeholder="406.2, 406.3" required></div><div class="form-group"><label>Сумма штрафа ($) <span style="color:var(--text-dim);font-weight:400">(необязательно)</span></label><input type="number" name="fine" id="pr-fine" placeholder="0" min="0"></div><div class="form-group"><label>Ссылки на доказательства <span style="color:var(--text-dim);font-weight:400">(через запятую)</span></label><textarea name="evidence" id="pr-evidence" rows="2" placeholder="https://... , https://..."></textarea></div><button type="submit" class="submit-btn"><i class="fas fa-file-signature"></i> Выписать</button></form></div>`);
+}
+
+async function addProtocol(e) {
+  e.preventDefault();
+  const d = new FormData(e.target);
+  const violator = d.get('violator');
+  const unit = d.get('unit') || '-';
+  const rank = d.get('rank') || '-';
+  const punishment = d.get('punishment');
+  const articles = d.get('articles');
+  const fine = parseInt(d.get('fine')) || 0;
+  const evidence = d.get('evidence') || '';
+  
+  await pushData('protocols', { 
+    date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+    violator, unit, rank, punishment, articles, fine, evidence,
+    violator_status: `${rank} | ${unit}`,
+    inspector: `"${CURRENT_USER.username}"`,
+    status: 'active',
+    ts: Date.now()
+  });
+  
+  await pushData('notifications', { title: 'Протокол', text: `Выписан на ${violator}`, type: 'sensitive', is_read: false, ts: Date.now() });
+  await addLog(`"${CURRENT_USER.username}"`, `Выписал протокол на ${violator}`);
+  closeDlg();
+  switchEmpTab('protocols', document.querySelector('#empSidebar .sidebar-item:nth-child(6)'));
+}
+
+async function dlgProtocol(id) {
+  const p = await readOnce(`protocols/${id}`);
+  if (!p) return;
+  
+  const evidenceLinks = (p.evidence || '').split(',').map(s => s.trim()).filter(s => s);
+  const evidenceHtml = evidenceLinks.length > 0 
+    ? `<div style="margin-top:16px"><div style="color:var(--text-dim);font-size:.7rem;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Фото-доказательства</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">${evidenceLinks.map(url => `<a href="${url}" target="_blank" style="display:block;border-radius:8px;overflow:hidden;border:1px solid var(--border2)"><img src="${url}" style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .2s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"></a>`).join('')}</div></div>`
+    : '';
+  
+  const autoText = `/ad [ВЧ] ${p.violator} из подразделения [${p.unit || '-'}] в звании [${p.rank || '-'}] был выписан штраф за нарушение следующих статей [${p.articles}] на сумму [${p.fine || 0}$]`;
+  
+  dlg(`
+    <div class="detail-header">
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;margin-bottom:4px">Протокол №${id.substring(0, 6)}</div>
+        <div style="color:var(--text-dim);font-size:.75rem">${p.date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${p.status === 'active' ? '<span class="status-badge status-active">Активен</span>' : '<span class="status-badge status-closed">Отменён</span>'}
+        <button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="info-grid" style="margin-bottom:16px">
+        <div class="info-row"><div class="info-label">ФИО / Позывной</div><div style="font-weight:600">${p.violator}</div></div>
+        <div class="info-row"><div class="info-label">Подразделение</div><div>${p.unit || '-'}</div></div>
+        <div class="info-row"><div class="info-label">Звание</div><div>${p.rank || '-'}</div></div>
+        <div class="info-row"><div class="info-label">Наказание</div><div style="color:var(--warning);font-weight:600">${p.punishment}${p.fine ? ` + ${p.fine}$` : ''}</div></div>
+      </div>
+      
+      <div style="margin-bottom:16px">
+        <div style="color:var(--text-dim);font-size:.7rem;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Статьи</div>
+        <div class="conviction-articles">${(p.articles || '').split(',').map(a => `<span class="article-tag">${a.trim()}</span>`).join('')}</div>
+      </div>
+      
+      ${evidenceHtml}
+      
+      <div style="margin-top:16px;background:var(--bg-700);border-radius:8px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="color:var(--text-dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Авто-текст для /ad</div>
+          <button class="btn-secondary" style="padding:4px 10px;font-size:.72rem" onclick="copyAutoText(this)"><i class="fas fa-copy"></i> Копировать</button>
+        </div>
+        <div style="background:var(--bg-900);padding:10px;border-radius:6px;font-size:.78rem;color:var(--text-muted);line-height:1.6;word-break:break-word" id="autoText-${id}">${autoText}</div>
+      </div>
+      
+      <div style="color:var(--text-dim);font-size:.75rem;margin-top:16px">Инспектор: ${p.inspector}</div>
+      
+      ${p.status === 'active' ? `<div style="display:flex;gap:8px;margin-top:16px"><button class="btn-danger" onclick="cancelProtocol('${id}')"><i class="fas fa-ban"></i> Отменить протокол</button><button class="btn-secondary" onclick="closeDlg()">Закрыть</button></div>` : '<div style="margin-top:16px"><button class="btn-secondary" onclick="closeDlg()">Закрыть</button></div>'}
+    </div>
+  `);
+}
+
+function copyAutoText(btn) {
+  const text = btn.closest('.detail-body').querySelector('[id^="autoText-"]').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = '<i class="fas fa-check"></i> Скопировано';
+    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Копировать', 2000);
+  });
+}
+
+async function cancelProtocol(id) {
+  if (!confirm('Отменить этот протокол?')) return;
+  await updateData(`protocols/${id}`, { status: 'cancelled' });
+  await addLog(`"${CURRENT_USER.username}"`, `Отменил протокол #${id.substring(0, 6)}`);
+  closeDlg();
+  switchEmpTab('protocols', document.querySelector('#empSidebar .sidebar-item:nth-child(6)'));
+  showToast('Протокол отменён');
+}
+
+
+async function tplAppeals() {
+  const all = await readOnce('appeals') || {};
+  const list = Object.entries(all).map(([id, a]) => ({ id, ...a })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-envelope"></i> Обращения</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Дата</th><th>Заявитель</th><th>Суть</th></tr></thead><tbody>${list.map(a => `<tr style="cursor:pointer" onclick="dlgAppeal('${a.id}')"><td>${a.date}</td><td><div style="font-weight:600">${a.applicant}</div><div style="margin-top:4px">${badge(a.status)}</div></td><td><div style="color:var(--accent);font-weight:600">${a.theme}</div><div style="color:var(--text-muted);font-size:.78rem">${(a.description||'').substring(0, 100)}...</div></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+async function dlgAppeal(id) {
+  const a = await readOnce(`appeals/${id}`); if (!a) return;
+  dlg(`<div class="detail-header"><div><div style="color:var(--accent);font-weight:700">#${id.substring(0, 8)}</div>${badge(a.status)}</div><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><div class="info-grid" style="margin-bottom:16px"><div class="info-row"><div class="info-label">Заявитель</div><div>${a.applicant}</div></div><div class="info-row"><div class="info-label">Должность</div><div>${a.position||'—'}</div></div><div class="info-row"><div class="info-label">Тема</div><div style="color:var(--accent)">${a.theme}</div></div><div class="info-row"><div class="info-label">Дата</div><div>${a.date}</div></div>${a.evidence ? `<div class="info-row"><div class="info-label">Доказательства</div><div><a href="${a.evidence}" target="_blank" style="color:var(--accent)">${a.evidence}</a></div></div>` : ''}</div><div style="background:var(--bg-700);padding:16px;border-radius:8px;margin-bottom:16px"><div style="color:var(--text);line-height:1.7">${a.description||''}</div></div><div style="display:flex;gap:8px"><button class="btn-primary" style="padding:8px 14px;font-size:.78rem" onclick="setAppeal('${id}','review')"><i class="fas fa-eye"></i> На рассмотрение</button><button class="btn-success" onclick="setAppeal('${id}','done')"><i class="fas fa-check"></i> Решено</button><button class="btn-secondary" onclick="closeDlg()">Закрыть</button></div></div>`);
+}
+
+async function setAppeal(id, s) { await updateData(`appeals/${id}`, { status: s }); await addLog(`"${CURRENT_USER.username}"`, `Обращение #${id.substring(0, 6)} → ${s}`); closeDlg(); switchEmpTab('appeals', document.querySelector('#empSidebar .sidebar-item:nth-child(7)')); }
+
+async function tplMilitary() {
+  const all = await readOnce('military_cases') || {};
+  const list = Object.entries(all).map(([id, m]) => ({ id, ...m })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-user-shield"></i> Военные дела</div><div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="submit-btn" style="padding:9px 18px;font-size:.8rem" onclick="dlgAddMilitary()"><i class="fas fa-plus"></i> Добавить</button></div><div class="mil-grid">${list.map(m => `<div class="mil-card" onclick="dlgMilitary('${m.id}')"><div class="mil-name">${m.name} ${m.callsign}</div><div class="mil-unit">${m.unit}</div><div class="danger-bar"><div class="danger-dots">${[1,2,3,4,5].map(n => `<div class="danger-dot${n <= m.danger ? ' filled' : ''}"></div>`).join('')}</div><span class="danger-label">${m.danger}/5</span></div></div>`).join('')}</div>`;
+}
+
+async function dlgMilitary(id) {
+  const m = await readOnce(`military_cases/${id}`);
+  if (!m) return;
+  
+  dlg(`
+    <div class="detail-header">
+      <div>
+        <div style="font-weight:700;font-size:1.05rem">${m.name} ${m.callsign}</div>
+        <div style="color:var(--text-muted);font-size:.78rem;margin-top:2px">${m.unit} · ${m.position}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${m.status === 'closed' ? '<span class="status-badge status-closed">Закрыто</span>' : '<span class="status-badge status-active">Активно</span>'}
+        <button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="danger-bar" style="margin-bottom:16px">
+        <div class="danger-dots">${[1,2,3,4,5].map(n => `<div class="danger-dot${n <= m.danger ? ' filled' : ''}"></div>`).join('')}</div>
+        <span class="danger-label">${m.danger}/5 Опасность</span>
+      </div>
+      <div style="background:var(--bg-700);padding:16px;border-radius:8px;margin-bottom:14px">
+        <div style="color:var(--text-dim);font-size:.7rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Характеристика</div>
+        <div style="color:var(--text);font-size:.85rem;line-height:1.7">${m.description || ''}</div>
+      </div>
+      <div style="color:var(--text-dim);font-size:.75rem;margin-bottom:16px">Дело ведёт: ${m.lead} · ${m.date}</div>
+      <div style="display:flex;gap:8px">
+        ${m.status !== 'closed' ? `<button class="btn-success" onclick="closeMilitaryCase('${id}')"><i class="fas fa-check"></i> Закрыть дело</button>` : ''}
+        <button class="btn-secondary" onclick="closeDlg()">Закрыть</button>
+      </div>
+    </div>
+  `);
+}
+
+async function closeMilitaryCase(id) {
+  if (!confirm('Закрыть это военное дело?')) return;
+  await updateData(`military_cases/${id}`, { status: 'closed' });
+  await addLog(`"${CURRENT_USER.username}"`, `Закрыл военное дело #${id.substring(0, 6)}`);
+  closeDlg();
+  switchEmpTab('military', document.querySelector('#empSidebar .sidebar-item:nth-child(8)'));
+  showToast('Дело закрыто');
+}
+
+async function tplMilitary() {
+  const all = await readOnce('military_cases') || {};
+  const list = Object.entries(all).map(([id, m]) => ({ id, ...m })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-user-shield"></i> Военные дела</div><div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="submit-btn" style="padding:9px 18px;font-size:.8rem" onclick="dlgAddMilitary()"><i class="fas fa-plus"></i> Добавить</button></div><div class="mil-grid">${list.map(m => `<div class="mil-card" onclick="dlgMilitary('${m.id}')" style="${m.status === 'closed' ? 'opacity:.6' : ''}"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="mil-name" style="margin:0">${m.name} ${m.callsign}</div>${m.status === 'closed' ? '<span class="status-badge status-closed" style="font-size:.6rem">Закрыто</span>' : ''}</div><div class="mil-unit">${m.unit}</div><div class="danger-bar"><div class="danger-dots">${[1,2,3,4,5].map(n => `<div class="danger-dot${n <= m.danger ? ' filled' : ''}"></div>`).join('')}</div><span class="danger-label">${m.danger}/5</span></div></div>`).join('')}</div>`;
+}
+
+async function tplCitizens() {
+  const all = await readOnce('citizens') || {};
+  const list = Object.entries(all).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-users"></i> База граждан</div><div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="submit-btn" style="padding:9px 18px;font-size:.8rem" onclick="dlgAddCitizen()"><i class="fas fa-plus"></i> Добавить</button></div><div class="search-bar"><input class="search-input" placeholder="Поиск..." oninput="filterCitizens(this.value)"></div><div class="citizens-grid" id="citizensGrid">${renderCitizenCards(list)}</div>`;
+}
+
+function renderCitizenCards(list) {
+  if (!list.length) return emptyState('Нет записей');
+  return list.map(c => `<div class="citizen-db-card" onclick="dlgCitizen('${c.id}')"><div style="font-weight:600;margin-bottom:3px">${c.name}</div><div style="color:var(--text-muted);font-size:.78rem;margin-bottom:8px">${c.unit||'—'}</div>${c.discord_id ? `<div style="color:var(--text-dim);font-size:.72rem"><i class="fab fa-discord"></i> ${c.discord_id}</div>` : ''}${c.steam_id ? `<div style="color:var(--text-dim);font-size:.72rem"><i class="fab fa-steam"></i> ${c.steam_id}</div>` : ''}</div>`).join('');
+}
+
+async function filterCitizens(q) {
+  const all = await readOnce('citizens') || {};
+  const list = Object.entries(all).map(([id, c]) => ({ id, ...c })).filter(c => (c.name||'').toLowerCase().includes(q.toLowerCase()) || (c.discord_id||'').includes(q) || (c.steam_id||'').includes(q));
+  document.getElementById('citizensGrid').innerHTML = renderCitizenCards(list);
+}
+
+async function dlgCitizen(id) {
+  const c = await readOnce(`citizens/${id}`); if (!c) return;
+  dlg(`<div class="detail-header"><div style="font-weight:700">${c.name}</div><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><div class="info-grid" style="margin-bottom:16px"><div class="info-row"><div class="info-label">ФИО</div><input class="info-input" id="cit-name" value="${c.name}"></div><div class="info-row"><div class="info-label">Discord</div><input class="info-input" id="cit-discord" value="${c.discord_id||''}"></div><div class="info-row"><div class="info-label">Steam</div><input class="info-input" id="cit-steam" value="${c.steam_id||''}"></div><div class="info-row"><div class="info-label">Подразделение</div><input class="info-input" id="cit-unit" value="${c.unit||''}"></div></div><div class="form-group" style="margin-bottom:16px"><label>Заметки</label><textarea class="info-input" id="cit-notes" rows="3">${c.notes||''}</textarea></div><div style="display:flex;gap:8px"><button class="save-btn" onclick="saveCitizen('${id}')"><i class="fas fa-save"></i> Сохранить</button><button class="btn-danger" onclick="delCitizen('${id}')"><i class="fas fa-trash"></i> Удалить</button></div></div>`);
+}
+
+async function saveCitizen(id) {
+  await updateData(`citizens/${id}`, { name: document.getElementById('cit-name').value, discord_id: document.getElementById('cit-discord').value, steam_id: document.getElementById('cit-steam').value, unit: document.getElementById('cit-unit').value, notes: document.getElementById('cit-notes').value });
+  closeDlg(); switchEmpTab('citizens', document.querySelector('#empSidebar .sidebar-item:nth-child(9)')); showToast('Сохранено');
+}
+
+async function delCitizen(id) { await removeData(`citizens/${id}`); closeDlg(); switchEmpTab('citizens', document.querySelector('#empSidebar .sidebar-item:nth-child(9)')); }
+
+function dlgAddCitizen() {
+  dlg(`<div class="detail-header"><h3 style="color:var(--accent)">Новая запись</h3><button class="modal-close" onclick="closeDlg()"><i class="fas fa-times"></i></button></div><div class="detail-body"><form onsubmit="addCitizen(event)" style="display:flex;flex-direction:column;gap:14px"><div class="form-group"><label>ФИО</label><input name="name" required></div><div class="form-group"><label>Discord ID</label><input name="discordId"></div><div class="form-group"><label>Steam ID</label><input name="steamId"></div><div class="form-group"><label>Подразделение</label><input name="unit"></div><div class="form-group"><label>Заметки</label><textarea name="notes" rows="3"></textarea></div><button type="submit" class="submit-btn"><i class="fas fa-plus"></i> Добавить</button></form></div>`);
+}
+
+async function addCitizen(e) {
+  e.preventDefault();
+  const d = new FormData(e.target);
+  await pushData('citizens', { name: d.get('name'), discord_id: d.get('discordId')||'', steam_id: d.get('steamId')||'', unit: d.get('unit')||'', notes: d.get('notes')||'', ts: Date.now() });
+  closeDlg(); switchEmpTab('citizens', document.querySelector('#empSidebar .sidebar-item:nth-child(9)'));
+}
+
+async function tplConvictions() {
+  const all = await readOnce('convictions') || {};
+  const list = Object.entries(all).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  return `<div class="section-title"><i class="fas fa-gavel"></i> Реестр судимостей</div><div class="add-form-card"><div class="add-form-title"><i class="fas fa-plus-circle"></i> Внесение судимости</div><form onsubmit="addConviction(event)" style="display:flex;flex-direction:column;gap:14px"><div class="form-row"><div class="form-group"><label><i class="fab fa-discord"></i> Discord ID *</label><input id="cDiscord" required></div><div class="form-group"><label><i class="fas fa-link"></i> Ссылка на дело *</label><input type="url" id="cLink" required></div></div><div class="form-row"><div class="form-group"><label>Срок (суток)</label><input type="number" id="cDur" min="0"></div><div class="form-group"><label>Погашение ($)</label><input type="number" id="cFine" min="0"></div></div><div class="form-group"><label>Комментарий</label><textarea id="cText" rows="3"></textarea></div><button type="submit" class="submit-btn" style="max-width:220px"><i class="fas fa-gavel"></i> Внести</button></form></div><div class="section-title" style="font-size:.82rem"><i class="fas fa-list"></i> Записи</div><div id="convList">${renderConvCards(list)}</div>`;
+}
+
+function renderConvCards(list) {
+  if (!list.length) return emptyState('Нет записей');
+  return list.map(c => `<div class="conviction-reg-card"><div class="conv-header"><div><div style="font-weight:700;color:var(--accent)">#${c.id.substring(0, 8)}</div><div class="conv-discord"><i class="fab fa-discord"></i> ${c.discord_id}</div></div>${badge(c.status)}</div><div class="conv-text">${c.text||''}</div><div class="conv-meta"><div class="conv-meta-item"><span class="conv-meta-label">Наложена</span><span class="conv-meta-val">${c.imposed}</span></div><div class="conv-meta-item"><span class="conv-meta-label">Срок</span><span class="conv-meta-val">${c.duration > 0 ? `${c.duration} сут.` : 'Бессрочная'}</span></div>${c.fine ? `<div class="conv-meta-item"><span class="conv-meta-label">Погашение</span><span class="conv-meta-val" style="color:var(--warning)">${c.fine.toLocaleString()} $</span></div>` : ''}<div class="conv-meta-item"><span class="conv-meta-label">Выдал</span><span class="conv-meta-val">${c.issuer}</span></div></div>${c.case_link ? `<div style="margin-top:8px"><a href="${c.case_link}" target="_blank" style="color:var(--accent);font-size:.78rem"><i class="fas fa-link"></i> Дело</a></div>` : ''}<div class="conv-actions"><button class="btn-success" onclick="setConv('${c.id}','closed')"><i class="fas fa-check"></i> Погашена</button><button class="btn-danger" onclick="setConv('${c.id}','cancelled')"><i class="fas fa-times"></i> Аннулировать</button>${c.status !== 'active' ? `<button class="btn-secondary" onclick="setConv('${c.id}','active')"><i class="fas fa-redo"></i> Активировать</button>` : ''}</div></div>`).join('');
+}
+
+async function addConviction(e) {
+  e.preventDefault();
+  const did = document.getElementById('cDiscord').value.trim();
+  const dur = parseInt(document.getElementById('cDur').value) || 0;
+  const fine = parseInt(document.getElementById('cFine').value) || 0;
+  const now = new Date();
+  const until = dur > 0 ? new Date(now.getTime() + dur * 86400000).toISOString().split('T')[0] : '';
+  await pushData('convictions', { discord_id: did, case_link: document.getElementById('cLink').value.trim(), duration: dur, fine, text: document.getElementById('cText').value.trim(), status: 'active', imposed: now.toISOString().slice(0, 16).replace('T', ' '), until_date: until, issuer: CURRENT_USER.username, ts: Date.now() });
+  await addLog(`"${CURRENT_USER.username}"`, `Судимость для ${did}`);
+  ['cDiscord','cLink','cDur','cFine','cText'].forEach(id => document.getElementById(id).value = '');
+  const all = await readOnce('convictions') || {};
+  const list = Object.entries(all).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  document.getElementById('convList').innerHTML = renderConvCards(list);
+  showToast('Внесено');
+}
+
+async function setConv(id, s) {
+  await updateData(`convictions/${id}`, { status: s });
+  await addLog(`"${CURRENT_USER.username}"`, `Судимость #${id.substring(0, 6)} → ${s}`);
+  const all = await readOnce('convictions') || {};
+  const list = Object.entries(all).map(([id, c]) => ({ id, ...c })).sort((a, b) => (b.ts||0) - (a.ts||0));
+  document.getElementById('convList').innerHTML = renderConvCards(list);
+}
+
+async function openAdminPortal() {
+  hideAll();
+  const el = document.createElement('div'); el.id = 'adminPortal'; el.className = 'employee-container';
+  el.innerHTML = `<div class="top-bar"><div class="topbar-left"><img src="https://i.pinimg.com/736x/a4/10/ca/a410ca08b855e6ce6971f50e5d9ea96a.jpg" class="sbu-logo-img-sm" style="border-radius:50%;object-fit:cover"><div><div class="topbar-title" style="color:var(--danger)">ADMIN PANEL</div><div class="topbar-subtitle">Управление</div></div></div><div class="topbar-right"><button class="back-btn" onclick="showDashboard()"><i class="fas fa-arrow-left"></i> Назад</button></div></div><div style="padding:30px;max-width:1400px;margin:0 auto;width:100%"><div class="section-title"><i class="fas fa-users-cog"></i> Пользователи</div><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Логин</th><th>Discord</th><th>Steam</th><th>Статус</th><th>Должность</th><th>Действия</th></tr></thead><tbody id="adminRows"></tbody></table></div></div>`;
+  document.body.appendChild(el);
+  await renderAdminRows();
+}
+
+async function renderAdminRows() {
+  const users = await readOnce('users') || {};
+  const list = Object.entries(users).map(([id, u]) => ({ id, ...u }));
+  document.getElementById('adminRows').innerHTML = list.map(u => `<tr><td style="font-weight:700;color:var(--accent)">${u.username}</td><td>${u.discord_id||'-'}</td><td>${u.steam_id||'-'}</td><td>${u.is_employee ? '<span class="status-badge status-active">Сотрудник</span>' : '<span class="status-badge status-closed">Гражданин</span>'}</td><td><input type="text" value="${u.position||''}" style="background:var(--bg-700);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:4px;width:150px" onchange="updUser('${u.id}','position',this.value)"></td><td><div style="display:flex;gap:6px">${!u.is_employee ? `<button class="btn-success" style="padding:4px 8px" onclick="grantEmp('${u.id}')"><i class="fas fa-user-plus"></i></button>` : `<button class="btn-secondary" style="padding:4px 8px" onclick="revokeEmp('${u.id}')"><i class="fas fa-user-minus"></i></button>`}<button class="btn-danger" style="padding:4px 8px" onclick="delUser('${u.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
+}
+
+async function grantEmp(uid) { await updateData(`users/${uid}`, { is_employee: true }); await renderAdminRows(); showToast('Доступ выдан'); }
+async function revokeEmp(uid) { await updateData(`users/${uid}`, { is_employee: false }); await renderAdminRows(); showToast('Доступ снят'); }
+async function updUser(uid, field, val) { await updateData(`users/${uid}`, { [field]: val }); }
+async function delUser(uid) { if (!confirm('Удалить аккаунт?')) return; await removeData(`users/${uid}`); await renderAdminRows(); showToast('Удалён'); }
+</script>
+</body>
+</html>
