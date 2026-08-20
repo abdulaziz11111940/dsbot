@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Фенрир Sandbox GMOD</title>
+	<link rel="icon" href="assets/ava.png" />
+	<meta name="description" content="Информационная страница проекта" />
+	<!-- Open Graph (placeholders) -->
+	<meta property="og:title" content="Фенрир Sandbox GMOD" />
+	<meta property="og:description" content="Правила, wiki и информация для проекта Sandbox GMOD" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="assets/ava.png" />
+	<meta property="og:url" content="https://example.com/" />
+	<link rel="canonical" href="https://example.com/" />
+	<link rel="stylesheet" href="styles.css" />
+	<!--
+		UTF-8 encoded file
+		Instructions:
+		- Edit styles in styles.css
+		- Edit content in the #app element or add new route templates in script.js (see comments)
+	-->
+</head>
+<body>
+	<!-- Seasonal canvas overlay -->
+	<div id="seasonal-overlay" aria-hidden="false"></div>
+
+	<header class="site-header">
+		<div class="site-brand">
+			<img src="assets/ava.png" alt="Фенрир Sandbox GMOD Logo" class="site-logo" />
+			<h1 class="site-title">Фенрир Sandbox GMOD</h1>
+			<!-- <small class="site-subtitle">Коммьюнити · Правила · Вики</small> -->
+		</div>
+
+		<!-- Navigation: collapses on small screens -->
+		<nav class="site-nav" id="main-nav" role="navigation" aria-label="Основная навигация">
+			<button id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="nav-list">
+				Меню
+			</button>
+			<ul id="nav-list" class="nav-list">
+				<li><a href="#/">Главная</a></li>
+				<li><a href="#/rules">Правила</a></li>
+				<li><a href="#/admin-rules">Правила админов</a></li>
+				<li><a href="#/wiki">Вики</a></li>
+				<li><a href="#/steam">Обновления</a></li>
+			</ul>
+		</nav>
+	</header>
+
+	<main id="app" class="app" role="main">
+		<!--
+			Content is rendered based on hash routing.
+			See script.js: templates object for editing page content
+			You can add a new route by adding an entry to templates (key = route fragment)
+		-->
+	</main>
+
+	<!-- Floating action button (bottom-right by default) -->
+	<!--
+		Configure URL or route in script.js -> floatingButtonConfig
+		Positioning: the .floating-button wrapper can be moved via CSS
+	-->
+	<div id="floating-actions" class="floating-actions">
+		<a id="floating-primary" class="floating-button" href="#/rules" title="Правила">Правила</a>
+	</div>
+
+	<footer class="site-footer">
+		<p>© Фенрир Sandbox · <small>GMOD Sandbox</small></p>
+	</footer>
+
+	<script src="script.js" defer></script>
+</body>
+</html>
